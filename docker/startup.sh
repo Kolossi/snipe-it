@@ -48,6 +48,13 @@ then
     sed -i "s/^upload_max_filesize.*/upload_max_filesize = ${PHP_UPLOAD_LIMIT}M/" /etc/php/*/apache2/php.ini
 fi
 
+# enable cron running of scheduler
+if [ -n "${ENABLE_CRON_SCHEDULER}" ]
+then
+    cron_scheduler_line='* * * * * /usr/bin/php /var/www/html/artisan schedule:run >> /dev/null 2>&1'
+    crontab -l | grep "${cron_scheduler_line}"  >> /dev/null 2>&1 || echo "${cron_scheduler_line}" | crontab
+fi
+
 # If the Oauth DB files are not present copy the vendor files over to the db migrations
 if [ ! -f "/var/www/html/database/migrations/*create_oauth*" ]
 then
